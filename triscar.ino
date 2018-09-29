@@ -1,6 +1,7 @@
 #include <AFMotor.h>
 
-#define SPEED 1
+#define ACCEL 1
+#define MAX_SPEED 255
 
 AF_DCMotor motor[] = {
   AF_DCMotor(1),
@@ -13,15 +14,15 @@ uint8_t state = BRAKE;
 bool debug = true;
 
 // move forward
-void forward(uint8_t speed) {
+void forward(uint8_t accel) {
   uint8_t i;
 
   if (state != FORWARD) {
-    if (state == BACKWARD) brake(2 * SPEED);
+    if (state == BACKWARD) brake(2 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(FORWARD);
     }
-    for (i=0; i<255; i+=speed) {
+    for (i=0; i<MAX_SPEED; i+=accel) {
       for (i=0; i<4; i++) {
         motor[i].setSpeed(i);
         delay(10);
@@ -35,15 +36,15 @@ void forward(uint8_t speed) {
 }
 
 // move backward
-void backward(uint8_t speed) {
+void backward(uint8_t accel) {
   uint8_t i;
 
   if (state != BACKWARD) {
-    if (state == FORWARD) brake(2 * SPEED);
+    if (state == FORWARD) brake(2 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(BACKWARD);
     }
-    for (i=0; i<255; i+=speed) {
+    for (i=0; i<MAX_SPEED; i+=accel) {
       for (i=0; i<4; i++) {
         motor[i].setSpeed(i);
         delay(10);
@@ -57,11 +58,11 @@ void backward(uint8_t speed) {
 }
 
 // brake
-void brake(uint8_t speed) {
+void brake(uint8_t accel) {
   uint8_t i;
 
   if (state != BRAKE || state != RELEASE) {
-    for (i=255; i!=0; i-=speed) {
+    for (i=MAX_SPEED; i!=0; i-=accel) {
       for (i=0; i<4; i++) {
         motor[i].setSpeed(i);
         delay(10);
@@ -105,9 +106,9 @@ void setup() {
 
 void loop() {
 
-  forward(SPEED);
-  backward(SPEED);
-  brake(2 * SPEED);
+  forward(ACCEL);
+  backward(ACCEL);
+  brake(2 * ACCEL);
 
   release();
 }
