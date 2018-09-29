@@ -1,52 +1,106 @@
-// Adafruit Motor shield library
-// copyright Adafruit Industries LLC, 2009
-// this code is public domain, enjoy!
-
 #include <AFMotor.h>
 
-AF_DCMotor motor(4);
+AF_DCMotor motor[] = {
+  AF_DCMotor(1),
+  AF_DCMotor(2),
+  AF_DCMotor(3),
+  AF_DCMotor(4)
+};
+
+uint8_t state = BRAKE;
+bool debug = true;
+
+// move forward
+void forward(uint8_t speed) {
+  uint8_t i;
+
+  if (state = BACKWARD) brake(2);
+  else if (state != FORWARD) {
+    for (i=0; i<4; i++) {
+      motor[i].run(state);
+    }
+    for (i=0; i<255; i+=speed) {
+      for (i=0; i<4; i++) {
+        motor[i].setSpeed(i);
+        delay(10);
+      }
+    }
+
+    state = FORWARD;
+  }
+
+  if (debug) Serial.println("Forward...");
+}
+
+// move backward
+void backward(uint8_t speed) {
+  uint8_t i;
+
+  if (state = FORWARD) brake(2);
+  else if (state != BACKWARD) {
+    for (i=0; i<4; i++) {
+      motor[i].run(state);
+    }
+    for (i=0; i<255; i+=speed) {
+      for (i=0; i<4; i++) {
+        motor[i].setSpeed(i);
+        delay(10);
+      }
+    }
+
+    state = BACKWARD;
+  }
+
+  if (debug) Serial.println("Backward...");
+}
+
+// brake
+void brake(uint8_t speed) {
+  uint8_t i;
+
+  state = BRAKE;
+
+  for (i=255; i!=0; i-=speed) {
+    for (i=0; i<4; i++) {
+      motor[i].setSpeed(i);
+      delay(10);
+    }
+  }
+
+  if (debug) Serial.println("brake...");
+}
+
+// release motors
+void release() {
+  uint8_t i;
+
+  state = RELEASE;
+
+  for (i=0; i<4; i++) {
+    motor[i].run(state);
+  }
+
+  delay(1000);
+}
 
 void setup() {
+  uint8_t i;
+
   Serial.begin(9600);           // set up Serial library at 9600 bps
   Serial.println("Motor test!");
 
-  // turn on motor
-  motor.setSpeed(200);
+  for (i=0; i<4; i++) {
+    motor[i].setSpeed(200);
+  }
 
-  motor.run(RELEASE);
+  release();
 }
 
 void loop() {
   uint8_t i;
 
-  Serial.print("tick");
+  forward(1);
+  backward(1);
 
-  motor.run(FORWARD);
-  for (i=0; i<255; i++) {
-    motor.setSpeed(i);
-    delay(10);
- }
-
-  for (i=255; i!=0; i--) {
-    motor.setSpeed(i);
-    delay(10);
- }
-
-  Serial.print("tock");
-
-  motor.run(BACKWARD);
-  for (i=0; i<255; i++) {
-    motor.setSpeed(i);
-    delay(10);
- }
-
-  for (i=255; i!=0; i--) {
-    motor.setSpeed(i);
-    delay(10);
- }
-
-
-  Serial.print("tech");
-  motor.run(RELEASE);
-  delay(1000);
+  release();
 }
