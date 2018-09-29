@@ -14,10 +14,10 @@ bool debug = true;
 void forward(uint8_t speed) {
   uint8_t i;
 
-  if (state = BACKWARD) brake(2);
-  else if (state != FORWARD) {
+  if (state != FORWARD) {
+    if (state == BACKWARD) brake(2);
     for (i=0; i<4; i++) {
-      motor[i].run(state);
+      motor[i].run(FORWARD);
     }
     for (i=0; i<255; i+=speed) {
       for (i=0; i<4; i++) {
@@ -36,10 +36,10 @@ void forward(uint8_t speed) {
 void backward(uint8_t speed) {
   uint8_t i;
 
-  if (state = FORWARD) brake(2);
-  else if (state != BACKWARD) {
+  if (state != BACKWARD) {
+    if (state == FORWARD) brake(2);
     for (i=0; i<4; i++) {
-      motor[i].run(state);
+      motor[i].run(BACKWARD);
     }
     for (i=0; i<255; i+=speed) {
       for (i=0; i<4; i++) {
@@ -58,29 +58,34 @@ void backward(uint8_t speed) {
 void brake(uint8_t speed) {
   uint8_t i;
 
-  state = BRAKE;
-
-  for (i=255; i!=0; i-=speed) {
-    for (i=0; i<4; i++) {
-      motor[i].setSpeed(i);
-      delay(10);
+  if (state != BRAKE || state != RELEASE) {
+    for (i=255; i!=0; i-=speed) {
+      for (i=0; i<4; i++) {
+        motor[i].setSpeed(i);
+        delay(10);
+      }
     }
+
+    state = BRAKE;
   }
 
-  if (debug) Serial.println("brake...");
+  if (debug) Serial.println("Brake...");
 }
 
 // release motors
 void release() {
   uint8_t i;
 
-  state = RELEASE;
+  if (state != RELEASE) {
+    for (i=0; i<4; i++) {
+      motor[i].run(state);
+    }
 
-  for (i=0; i<4; i++) {
-    motor[i].run(state);
+    state = RELEASE;
+    delay(1000);
   }
 
-  delay(1000);
+  if (debug) Serial.println("Release...");
 }
 
 void setup() {
@@ -97,10 +102,10 @@ void setup() {
 }
 
 void loop() {
-  uint8_t i;
 
   forward(1);
   backward(1);
+  brake(2);
 
   release();
 }
