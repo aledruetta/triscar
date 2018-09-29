@@ -1,5 +1,7 @@
 #include <AFMotor.h>
 
+#define SPEED 1
+
 AF_DCMotor motor[] = {
   AF_DCMotor(1),
   AF_DCMotor(2),
@@ -15,7 +17,7 @@ void forward(uint8_t speed) {
   uint8_t i;
 
   if (state != FORWARD) {
-    if (state == BACKWARD) brake(2);
+    if (state == BACKWARD) brake(2 * SPEED);
     for (i=0; i<4; i++) {
       motor[i].run(FORWARD);
     }
@@ -37,7 +39,7 @@ void backward(uint8_t speed) {
   uint8_t i;
 
   if (state != BACKWARD) {
-    if (state == FORWARD) brake(2);
+    if (state == FORWARD) brake(2 * SPEED);
     for (i=0; i<4; i++) {
       motor[i].run(BACKWARD);
     }
@@ -103,9 +105,9 @@ void setup() {
 
 void loop() {
 
-  forward(1);
-  backward(1);
-  brake(2);
+  forward(SPEED);
+  backward(SPEED);
+  brake(2 * SPEED);
 
   release();
 }
