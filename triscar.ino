@@ -15,64 +15,67 @@ bool debug = true;
 
 // move forward
 void forward(uint8_t accel) {
-  uint8_t i;
+  uint8_t i, j;
 
   if (state != FORWARD) {
-    if (state == BACKWARD) brake(2 * ACCEL);
+    if (state == BACKWARD) brake(3 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(FORWARD);
     }
-    for (i=0; i<MAX_SPEED; i+=accel) {
-      for (i=0; i<4; i++) {
-        motor[i].setSpeed(i);
+
+    if (debug) Serial.println("Forward...");
+
+    for (i=0; i<MAX_SPEED-accel; i+=accel) {
+      for (j=0; j<4; j++) {
+        motor[j].setSpeed(i);
         delay(10);
       }
     }
 
     state = FORWARD;
   }
-
-  if (debug) Serial.println("Forward...");
 }
 
 // move backward
 void backward(uint8_t accel) {
-  uint8_t i;
+  uint8_t i, j;
 
   if (state != BACKWARD) {
-    if (state == FORWARD) brake(2 * ACCEL);
+    if (state == FORWARD) brake(3 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(BACKWARD);
     }
-    for (i=0; i<MAX_SPEED; i+=accel) {
-      for (i=0; i<4; i++) {
-        motor[i].setSpeed(i);
+
+    if (debug) Serial.println("Backward...");
+
+    for (i=0; i<MAX_SPEED-accel; i+=accel) {
+      for (j=0; j<4; j++) {
+        motor[j].setSpeed(i);
         delay(10);
       }
     }
 
     state = BACKWARD;
   }
-
-  if (debug) Serial.println("Backward...");
 }
 
 // brake
 void brake(uint8_t accel) {
-  uint8_t i;
+  uint8_t i, j;
 
   if (state != BRAKE || state != RELEASE) {
-    for (i=MAX_SPEED; i!=0; i-=accel) {
-      for (i=0; i<4; i++) {
-        motor[i].setSpeed(i);
+
+    if (debug) Serial.println("Brake...");
+
+    for (i=MAX_SPEED; i>0+accel; i-=accel) {
+      for (j=0; j<4; j++) {
+        motor[j].setSpeed(i);
         delay(10);
       }
     }
 
     state = BRAKE;
   }
-
-  if (debug) Serial.println("Brake...");
 }
 
 // release motors
@@ -80,6 +83,9 @@ void release() {
   uint8_t i;
 
   if (state != RELEASE) {
+
+    if (debug) Serial.println("Release...");
+
     for (i=0; i<4; i++) {
       motor[i].run(state);
     }
@@ -87,8 +93,6 @@ void release() {
     state = RELEASE;
     delay(1000);
   }
-
-  if (debug) Serial.println("Release...");
 }
 
 void setup() {
@@ -108,7 +112,7 @@ void loop() {
 
   forward(ACCEL);
   backward(ACCEL);
-  brake(2 * ACCEL);
+  //brake(3 * ACCEL);
 
-  release();
+  //release();
 }
