@@ -4,10 +4,10 @@
 #define MAX_SPEED 255
 
 AF_DCMotor motor[] = {
-  AF_DCMotor(1),
-  AF_DCMotor(2),
-  AF_DCMotor(3),
-  AF_DCMotor(4)
+  AF_DCMotor(1),          // front right
+  AF_DCMotor(2),          // front left
+  AF_DCMotor(3),          // back left
+  AF_DCMotor(4)           // back right
 };
 
 uint8_t state = BRAKE;
@@ -18,7 +18,7 @@ void forward(uint8_t accel) {
   uint8_t i, j;
 
   if (state != FORWARD) {
-    if (state == BACKWARD) brake(3 * ACCEL);
+    if (state == BACKWARD) brake(4 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(FORWARD);
     }
@@ -41,7 +41,7 @@ void backward(uint8_t accel) {
   uint8_t i, j;
 
   if (state != BACKWARD) {
-    if (state == FORWARD) brake(3 * ACCEL);
+    if (state == FORWARD) brake(4 * ACCEL);
     for (i=0; i<4; i++) {
       motor[i].run(BACKWARD);
     }
@@ -112,7 +112,6 @@ void loop() {
 
   forward(ACCEL);
   backward(ACCEL);
-  //brake(3 * ACCEL);
 
   //release();
 }
