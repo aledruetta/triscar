@@ -1,4 +1,5 @@
 #include <AFMotor.h>
+#include <NewPing.h>
 
 #define ACCEL 1
 #define MAX_SPEED 255
@@ -9,6 +10,12 @@ AF_DCMotor motor[] = {
   AF_DCMotor(3),          // back left
   AF_DCMotor(4)           // back right
 };
+
+#define TRIGGER_PIN A1
+#define ECHO_PIN A0
+#define MAX_DISTANCE 100
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 uint8_t state = BRAKE;
 bool debug = true;
@@ -98,7 +105,7 @@ void release() {
 void setup() {
   uint8_t i;
 
-  Serial.begin(9600);           // set up Serial library at 9600 bps
+  Serial.begin(115200);           // set up Serial library at 9600 bps
   Serial.println("Motor test!");
 
   for (i=0; i<4; i++) {
@@ -110,8 +117,12 @@ void setup() {
 
 void loop() {
 
-  forward(ACCEL);
-  backward(ACCEL);
+  //forward(ACCEL);
+  //backward(ACCEL);
+  delay(50);
+  Serial.print("Ping: ");
+  Serial.print(sonar.ping_cm());
+  Serial.println(" cm");
 
   //release();
 }
