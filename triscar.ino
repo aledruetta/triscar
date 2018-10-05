@@ -16,7 +16,8 @@
 // Ultrassom
 #define TRIGGER_PIN A1
 #define ECHO_PIN A0
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 100
+#define SONAR_MIN_TIME 100
 
 AF_DCMotor motor[] = {
   AF_DCMotor(1),          // front right
@@ -31,6 +32,8 @@ bool obstacle = false;
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 unsigned long distance;
+unsigned long time;
+unsigned long last_time;
 
 bool debug = true;
 
@@ -69,6 +72,8 @@ void avoid_obstacle() {
 void setup() {
   uint8_t i;
 
+  last_time = millis();
+
   Serial.begin(115200);
 
   for (i=0; i<4; i++) {
@@ -83,8 +88,13 @@ void setup() {
 void loop() {
   uint8_t i, j;
 
-  distance = sonar.ping_cm();
-  obstacle = (distance > 0 && distance < 40) ? true : false;
+  time = millis();
+
+  if (time - last_time > SONAR_MIN_TIME) {
+    last_time = time;
+    distance = sonar.ping_cm();
+    obstacle = (distance > 0 && distance < 40) ? true : false;
+  }
 
   if (debug) {
     Serial.print("state: ");
