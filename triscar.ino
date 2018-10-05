@@ -63,7 +63,6 @@ void avoid_obstacle() {
 
   for (i=0; i<4; i++) {
     motor_speed[i] = 0;
-    motor[i].run(FORWARD);
   }
 
   state = STOP;
@@ -87,6 +86,7 @@ void setup() {
 
 void loop() {
   uint8_t i, j;
+  unsigned sum;
 
   time = millis();
 
@@ -130,8 +130,6 @@ void loop() {
         state = AVOID;
         break;
     }
-  } else if (state == STOP) {
-    state = FORWARD;
   }
 
   switch (state) {
@@ -146,15 +144,23 @@ void loop() {
       }
       break;
     case BRAKE:
+      sum = 0;
+
       for (i=0; i<4; i++) {
         if (motor_speed[i] > BRAKE_ACCEL) {
           motor_speed[i] -= BRAKE_ACCEL;
         } else {
           motor_speed[i] = 0;
-          state = STOP;
-          delay(200);
         }
         motor[i].setSpeed(motor_speed[i]);
+        sum += motor_speed[i];
+      }
+      if (sum == 0) state = STOP;
+      break;
+    case STOP:
+      state = FORWARD;
+      for (i=0; i<4; i++) {
+        motor[i].run(state);
       }
       break;
     case AVOID:
