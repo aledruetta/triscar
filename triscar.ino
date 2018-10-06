@@ -1,6 +1,9 @@
 #include <AFMotor.h>
 #include <NewPing.h>
 
+/* Constants */
+
+// State
 #define STOP 0
 //FORWARD 1
 //BACKWARD 2
@@ -8,6 +11,7 @@
 //RELEASE 4
 #define AVOID 5
 
+// Motor
 #define NORMAL_ACCEL 1
 #define BRAKE_ACCEL 4
 #define AVOID_ACCEL 4
@@ -19,6 +23,8 @@
 #define MAX_DISTANCE 100
 #define SONAR_MIN_TIME 200
 
+/* Objects and variables */
+
 AF_DCMotor motor[] = {
   AF_DCMotor(1),          // front right
   AF_DCMotor(2),          // front left
@@ -28,14 +34,16 @@ AF_DCMotor motor[] = {
 
 uint8_t motor_speed[4];
 uint8_t state;
-bool obstacle = false;
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 unsigned long distance;
 unsigned long time;
 unsigned long last_time;
 
+bool obstacle = false;
 bool debug = true;
+
+/* Functions */
 
 void avoid_obstacle() {
   Serial.println("Avoiding");
@@ -93,7 +101,7 @@ void run_state() {
   }
 }
 
-// SETUP
+/* SETUP */
 
 void setup() {
   uint8_t i;
@@ -111,7 +119,7 @@ void setup() {
   delay(1000);
 }
 
-// LOOP
+/* LOOP */
 
 void loop() {
   uint8_t i, j;
