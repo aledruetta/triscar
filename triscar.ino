@@ -85,6 +85,14 @@ void print_info() {
   Serial.println();
 }
 
+void run_state() {
+  uint8_t i;
+
+  for (i=0; i<4; i++) {
+    motor[i].run(state);
+  }
+}
+
 // SETUP
 
 void setup() {
@@ -127,10 +135,7 @@ void loop() {
         if (distance > 0 && distance < 10) {
           delay(1000);
           state = FORWARD;
-
-          for (i=0; i<4; i++) {
-            motor[i].run(state);
-          }
+          run_state();
         }
         break;
       case FORWARD:
@@ -169,16 +174,12 @@ void loop() {
         if (sum == 0) state = STOP;
       } else {
         state = FORWARD;
-        for (i=0; i<4; i++) {
-          motor[i].run(state);
-        }
+        run_state();
       }
       break;
     case STOP:
       state = FORWARD;
-      for (i=0; i<4; i++) {
-        motor[i].run(state);
-      }
+      run_state();
       break;
     case AVOID:
       avoid_obstacle();
