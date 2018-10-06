@@ -36,7 +36,6 @@ uint8_t motor_speed[4];
 uint8_t state;
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
-unsigned long distance;
 unsigned long time;
 unsigned long last_time;
 
@@ -73,10 +72,11 @@ void avoid_obstacle() {
     motor_speed[i] = 0;
   }
 
-  state = STOP;
+  state = FORWARD;
+  run_state();
 }
 
-void print_info() {
+void print_info(unsigned long distance) {
   uint8_t i;
 
   Serial.print("state: ");
@@ -91,6 +91,40 @@ void print_info() {
     Serial.print(" ");
   }
   Serial.println();
+}
+
+uint8_t brake() {
+  uint8_t i;
+  unsigned sum = 0;
+
+  for (i=0; i<4; i++) {
+    if (motor_speed[i] > BRAKE_ACCEL) {
+      motor_speed[i] -= BRAKE_ACCEL;
+    } else {
+      motor_speed[i] = 0;
+    }
+    motor[i].setSpeed(motor_speed[i]);
+    sum += motor_speed[i];
+  }
+
+  return sum / 4;
+}
+
+uint8_t accel() {
+  uint8_t i;
+  unsigned sum = 0;
+
+  for (i=0; i<4; i++) {
+    if (motor_speed[i] < MAX_SPEED-NORMAL_ACCEL) {
+      motor_speed[i] += NORMAL_ACCEL;
+    } else {
+      motor_speed[i] = MAX_SPEED;
+    }
+    motor[i].setSpeed(motor_speed[i]);
+    sum += motor_speed[i];
+  }
+
+  return sum / 4;
 }
 
 void run_state() {
@@ -122,11 +156,12 @@ void setup() {
 /* LOOP */
 
 void loop() {
-  uint8_t i, j;
-  unsigned sum;
+  uint8_t i, j, speed;
+  unsigned long distance;
 
   time = millis();
 
+  // Efeituar leitura do sonar
   if (time - last_time > SONAR_MIN_TIME) {
     last_time = time;
     distance = sonar.ping_cm();
@@ -134,12 +169,14 @@ void loop() {
   }
 
   if (debug) {
-    print_info();
+    print_info(distance);
   }
 
+  // Ações quando há obstáculo na frente
   if (obstacle) {
     switch (state) {
       case RELEASE:
+        // Gesto de ativação
         if (distance > 0 && distance < 10) {
           delay(1000);
           state = FORWARD;
@@ -147,51 +184,15 @@ void loop() {
         }
         break;
       case FORWARD:
-        state = BRAKE;
-        break;
-      case STOP:
-        state = AVOID;
+        // Acionar o freado
+        speed = brake();
+        if (speed == 0) avoid_obstacle();
+
         break;
     }
-  }
-
-  switch (state) {
-    case FORWARD:
-      for (i=0; i<4; i++) {
-        if (motor_speed[i] < MAX_SPEED-NORMAL_ACCEL) {
-          motor_speed[i] += NORMAL_ACCEL;
-        } else {
-          motor_speed[i] = MAX_SPEED;
-        }
-        motor[i].setSpeed(motor_speed[i]);
-      }
-      break;
-    case BRAKE:
-      if (obstacle) {
-        sum = 0;
-
-        for (i=0; i<4; i++) {
-          if (motor_speed[i] > BRAKE_ACCEL) {
-            motor_speed[i] -= BRAKE_ACCEL;
-          } else {
-            motor_speed[i] = 0;
-          }
-          motor[i].setSpeed(motor_speed[i]);
-          sum += motor_speed[i];
-        }
-        if (sum == 0) state = STOP;
-      } else {
-        state = FORWARD;
-        run_state();
-      }
-      break;
-    case STOP:
-      state = FORWARD;
-      run_state();
-      break;
-    case AVOID:
-      avoid_obstacle();
-      break;
+  } else if (state == FORWARD) {
+    // Acelerar até MAX_SPEED
+    speed = accel();
   }
 
   delay(10);
