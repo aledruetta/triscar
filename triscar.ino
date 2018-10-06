@@ -154,18 +154,25 @@ void loop() {
       }
       break;
     case BRAKE:
-      sum = 0;
+      if (obstacle) {
+        sum = 0;
 
-      for (i=0; i<4; i++) {
-        if (motor_speed[i] > BRAKE_ACCEL) {
-          motor_speed[i] -= BRAKE_ACCEL;
-        } else {
-          motor_speed[i] = 0;
+        for (i=0; i<4; i++) {
+          if (motor_speed[i] > BRAKE_ACCEL) {
+            motor_speed[i] -= BRAKE_ACCEL;
+          } else {
+            motor_speed[i] = 0;
+          }
+          motor[i].setSpeed(motor_speed[i]);
+          sum += motor_speed[i];
         }
-        motor[i].setSpeed(motor_speed[i]);
-        sum += motor_speed[i];
+        if (sum == 0) state = STOP;
+      } else {
+        state = FORWARD;
+        for (i=0; i<4; i++) {
+          motor[i].run(state);
+        }
       }
-      if (sum == 0) state = STOP;
       break;
     case STOP:
       state = FORWARD;
