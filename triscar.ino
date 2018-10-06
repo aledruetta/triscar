@@ -17,7 +17,7 @@
 #define TRIGGER_PIN A1
 #define ECHO_PIN A0
 #define MAX_DISTANCE 100
-#define SONAR_MIN_TIME 100
+#define SONAR_MIN_TIME 200
 
 AF_DCMotor motor[] = {
   AF_DCMotor(1),          // front right
@@ -27,7 +27,7 @@ AF_DCMotor motor[] = {
 };
 
 uint8_t motor_speed[4];
-uint8_t state = RELEASE;
+uint8_t state;
 bool obstacle = false;
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
@@ -68,12 +68,30 @@ void avoid_obstacle() {
   state = STOP;
 }
 
+void print_info() {
+  uint8_t i;
+
+  Serial.print("state: ");
+  Serial.print(state);
+  Serial.print(" obstacle? ");
+  Serial.print(obstacle);
+  Serial.print(" distance: ");
+  Serial.print(distance);
+  Serial.print(" speed: ");
+  for (i=0; i<4; i++) {
+    Serial.print(motor_speed[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+// SETUP
+
 void setup() {
   uint8_t i;
 
   last_time = millis();
-
-  Serial.begin(115200);
+  state = RELEASE;
 
   for (i=0; i<4; i++) {
     motor_speed[i] = 0;
@@ -81,8 +99,11 @@ void setup() {
     motor[i].run(state);
   }
 
+  Serial.begin(115200);
   delay(1000);
 }
+
+// LOOP
 
 void loop() {
   uint8_t i, j;
@@ -97,24 +118,13 @@ void loop() {
   }
 
   if (debug) {
-    Serial.print("state: ");
-    Serial.print(state);
-    Serial.print(" obstacle? ");
-    Serial.print(obstacle);
-    Serial.print(" distance: ");
-    Serial.print(distance);
-    Serial.print(" speed: ");
-    for (i=0; i<4; i++) {
-      Serial.print(motor_speed[i]);
-      Serial.print(" ");
-    }
-    Serial.println();
+    print_info();
   }
 
   if (obstacle) {
     switch (state) {
       case RELEASE:
-        if (distance > 5 && distance < 15) {
+        if (distance > 0 && distance < 10) {
           delay(1000);
           state = FORWARD;
 
